@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// Each User will be able to join and create multiple rooms, and have their own tasks
+model User {
+  id  String @id @default(uuid())
+  name String
+
+  participations RoomParticipant[]
+  tasks Tasks[]
+}
+
+// The Room can contain multiple users, will have a code, a password to join, and will host the tasks and the timer
+model Room {
+  id  String @id @default(uuid())
+  code String @unique
+  password String
+
+  participants RoomParticipant[]
+  tasks Tasks[]
+  timer Timer?
+}
+
+// The Room Participant is also a User, so the relation connects both id fields to identification, also with the Room they are in it
+model RoomParticipant{
+  id  String @id @default(uuid())
+  userId String
+  roomId String
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+// The Tasks area will have a title, but also a progress bar indicating the percentage of them done, they are a proporty of a User and are in a specific Room
+model Tasks {
+  id  String @id @default(uuid())
+  title String
+  progress Int @default(0) 
+
+  userId String
+  roomId String
+
+  user User @relation(fields: [userId], references: [id])
+  room Room @relation(fields: [roomId], references: [id])
+}
+
+// The Timer can be optional and is relation to a specific room, it has a duration and marks the time
+model Timer {
+  id  String @id @default(uuid())
+  duration Int 
+  started  Boolean @default(false)
+  startedAt DateTime?
+
+  roomId   String @unique
+  room Room @relation(fields: [roomId], references: [id])
+
+}
