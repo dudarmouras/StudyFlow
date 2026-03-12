@@ -1,6 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import { UserRepository } from  '../repository'
 import { User, UpdateUser } from '../DTOs'
+import jwt from 'jsonwebtoken';
 
 class UserController {
 
@@ -20,10 +21,17 @@ class UserController {
             }
 
             const user = await UserRepository.create( userData.data );
+            
+            const token = jwt.sign(
+                { id: user.id },                          
+                process.env.JWT_SECRET as string,        
+                { expiresIn: '7d' }                      
+            );
 
-                res.status(201).json({ 
-                    message: 'User created', 
-                    data: user 
+            res.status(201).json({ 
+                message: 'User created', 
+                data: user ,
+                token
             });;
 
         }

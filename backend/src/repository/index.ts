@@ -1,3 +1,4 @@
 import UserRepository from './UserRepository'
+import RoomRepository from './RoomRepository';
 
-export { UserRepository };
+export { UserRepository , RoomRepository };

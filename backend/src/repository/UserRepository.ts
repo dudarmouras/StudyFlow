@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import prisma from '../database';
-import { User, UpdateUser } from '../DTOs/User';
+import { User, UpdateUser } from '../DTOs';
 
-// Creating the most used operations for User as create, update, delete and findbyid (get)
+// Creating the most used operations for User as create, update, delete, findbyid (get) and findbyemail(get)
 class UserRepository {
     async create(data: z.infer<typeof User>) {
         const user = await prisma.user.create({ data });
@@ -16,6 +16,11 @@ class UserRepository {
     
     async findById(id:string){
         const user = await prisma.user.findUnique({where: { id }});
+        return user;
+    }
+
+    async findByEmail(email: string){
+        const user = await prisma.user.findUnique({ where: { email } });
         return user;
     }
 
