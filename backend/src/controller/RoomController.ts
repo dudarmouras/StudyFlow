@@ -1,4 +1,4 @@
-import { RoomRepository } from "../repository";
+import { RoomRepository , RoomParticipantRepository } from "../repository";
 import { Request, Response, NextFunction } from 'express';
 import { CreateRoom, UpdateRoom, JoinRoom } from '../DTOs'
 import { compare , hash } from 'bcryptjs';
