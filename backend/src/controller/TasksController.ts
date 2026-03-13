@@ -1,4 +1,4 @@
-import { TasksRepository } from "../repository";
+import { TasksRepository , UserRepository} from "../repository";
 import { Request, Response, NextFunction } from 'express';
 import { Tasks, UpdateTasks } from '../DTOs'
 
@@ -34,6 +34,7 @@ class TasksController{
     async update(req: Request, res: Response, next: NextFunction){
         try{
             const tasksId = req.params.id as string;
+            const userId = req.user?.id as string;
             const tasksData = UpdateTasks.safeParse(req.body)
 
             if(!tasksData.success){
@@ -46,9 +47,22 @@ class TasksController{
                 return;
             }
 
+             const existingTask = await TasksRepository.findById(tasksId);
+
+            if(!existingTask){
+                res.status(404).json({ message: 'Task not found' });
+                return;
+            }
+
+            // Verifies if the Task belong to the User
+            if(existingTask.userId !== userId){
+                res.status(403).json({ message: 'Not authorized' });
+                return;
+            }
+
             const task = await TasksRepository.update(tasksId , tasksData.data) 
                 res.status(200).json({ 
-                    message: 'User updated', 
+                    message: 'Task updated', 
                     data: task 
                 });
         }
@@ -60,6 +74,19 @@ class TasksController{
     async delete(req: Request, res: Response, next: NextFunction){
         try{
             const tasksId = req.params.id as string;
+            const userId = req.user?.id as string;
+            const existingTask = await TasksRepository.findById(tasksId);
+
+            if(!existingTask){
+                res.status(404).json({ message: 'Task not found' });
+                return;
+            }
+
+            // Verifies the Task will by deleted by their own User
+            if(existingTask.userId !== userId){
+                res.status(403).json({ message: 'Not authorized' });
+                return;
+            }
             const task = await TasksRepository.delete( tasksId );
 
               if (!task) {

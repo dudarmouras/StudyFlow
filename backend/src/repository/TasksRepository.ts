@@ -28,6 +28,11 @@ class TasksRepository{
         const task = await prisma.tasks.delete({where: { id }});
         return task;
     }
+
+    async findById(id: string){
+        const task = await prisma.tasks.findUnique({where: { id }});
+        return task;
+    }
 }
 
 export default new TasksRepository();
