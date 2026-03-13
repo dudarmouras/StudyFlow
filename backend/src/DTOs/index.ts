@@ -1,6 +1,7 @@
 import { User, UpdateUser } from './User';
 import { JoinRoom, CreateRoom, UpdateRoom } from './Room';
 import { CreateRoomParticipant } from './RoomParticipant';
+import { Tasks, UpdateTasks } from './Tasks'
 
 export {
   User,
@@ -9,4 +10,6 @@ export {
   CreateRoom,
   UpdateRoom,
   CreateRoomParticipant,
+  Tasks,
+  UpdateTasks,
 };

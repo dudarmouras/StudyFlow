@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
 import { RoomParticipantRepository } from  '../repository'
-import { CreateRoomParticipant } from '../DTOs'
 
 class RoomParticipantController {
 

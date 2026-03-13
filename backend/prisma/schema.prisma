@@ -50,7 +50,7 @@ model RoomParticipant{
 model Tasks {
   id  String @id @default(uuid())
   title String
-  progress Int @default(0) 
+  isDone Boolean @default(false)
 
   userId String
   roomId String

@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import prisma from '../database';
 import { randomBytes } from 'crypto';
-import { CreateRoom, JoinRoom,  UpdateRoom } from '../DTOs';
+import { CreateRoom,  UpdateRoom } from '../DTOs';
 
 class RoomRepository {
     
