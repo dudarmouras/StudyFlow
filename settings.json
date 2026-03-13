@@ -1,0 +1,11 @@
+{
+  "editor.quickSuggestions": {
+    "strings": "on"
+  },
+  "css.lint.unknownAtRules": "ignore",
+  "css.lint.unknownProperties": "ignore",
+  "scss.lint.unknownAtRules": "ignore",
+  "tailwindCSS.experimental.classRegex": [],
+  "tailwindCSS.files.exclude": [],
+  "editor.inlineSuggest.enabled": true
+}
