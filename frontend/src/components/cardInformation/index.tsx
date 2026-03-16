@@ -10,7 +10,7 @@ interface CardInformationProps {
 
 export default function CardInformation({icon: Icon, title, description}:CardInformationProps){
     return (
-        <Card className='w-70 h-full border shadow-[#ae44c6] shadow-2xs border-gray-200'>
+        <Card className='w-70 h-full border shadow-[#ae44c6] shadow-2x1 border-gray-200'>
             <div className='flex justify-center items-center '>
                 <div className='border rounded-xl w-12 h-12 flex justify-center items-center bg-linear-to-br from-pink-400 to-purple-500'>
                     <Icon className='flex justify-center items-center w-8 h-8 text-white'/>
