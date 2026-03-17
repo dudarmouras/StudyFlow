@@ -6,6 +6,7 @@ import RegisterModal from "@/components/modalRegister";
 import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/modalLogin";
 import CreateRoomModal from "@/components/modalCreate";
+import LoginRoomModal from "@/components/modalJoin";
 
 import React from 'react'
 import { Users } from 'lucide-react'
@@ -15,6 +16,7 @@ export default function Home() {
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isLoginOpen, setIsLoginOpen] = React.useState(false);
   const [isCreateRoomOpen, setIsCreateRoomOpen] = React.useState(false);
+  const [isLoginRoomOpen, setIsLoginRoomOpen] = React.useState(false);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -55,6 +57,16 @@ export default function Home() {
     <CreateRoomModal
       isOpen={isCreateRoomOpen}
       onClose={() => setIsCreateRoomOpen(false)}
+    />
+
+    <Button className="bg-blue-700! text-white! shadow-md hover:bg-pink-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
+      onClick={() => setIsLoginRoomOpen(true)}>
+      Login na Sala
+    </Button>
+
+    <LoginRoomModal
+      isOpen={isLoginRoomOpen}
+      onClose={() => setIsLoginRoomOpen(false)}
     />
    
       </main>

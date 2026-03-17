@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation"
 import { Input } from "../ui/input"
 import { Label } from "../ui/label"
 import { Button } from "../ui/button"
-import { Eye, EyeOff } from "lucide-react"
+import { Eye, EyeOff , UserKey, Lock} from "lucide-react"
 
 import api from "../../services/api"
 import { AxiosError } from "axios"   
@@ -22,11 +22,11 @@ type ApiErrorResponse = {
 }
 
 type FormLoginData = {
-  email: string;
+  code: string;
   password: string;
 }
 
-export default function LoginModal({isOpen, onClose}: ModalLoginProps) {
+export default function LoginRoomModal({isOpen, onClose}: ModalLoginProps) {
     const router = useRouter();
 
     const [apiError, setApiError] = useState<string | null>(null);
@@ -45,16 +45,12 @@ export default function LoginModal({isOpen, onClose}: ModalLoginProps) {
         setApiSuccess(null);
 
         try {
-        const response = await api.post("/login", {
-            email: data.email,
+        const response = await api.post("/room/join", {
+            code: data.code,
             password: data.password,
       });
 
         console.log(response.data)
-
-        // Save the Bearer token
-        const token = response.data.token;
-        localStorage.setItem("token", token);
 
         setApiSuccess(response.data.message);
         reset(); 
@@ -67,7 +63,7 @@ export default function LoginModal({isOpen, onClose}: ModalLoginProps) {
     } catch (err) {
         const axiosErr = err as AxiosError<ApiErrorResponse>;
         setApiError(
-        axiosErr.response?.data?.message ?? "Email ou senha inválidos"
+        axiosErr.response?.data?.message ?? "Código ou Senha inválidos"
       );
     }
 };
@@ -101,7 +97,7 @@ if (!isOpen) return null;
                             </Button>
                         </div>
 
-                        <p className="font-semibold text-[20px] text-gray-700 mt-4">Login:</p>
+                        <p className="flex justify-center mr-4 font-semibold text-[20px] text-pink-900 mt-4">Login na Sala:</p>
                     </div>
 
                     <div className="border-b-2 mt-3 border-purple-300"></div>
@@ -109,24 +105,21 @@ if (!isOpen) return null;
                     <div className="flex flex-col my-4 mx-4 gap-4">
 
                     <div>
-                        <Label className="font-semibold" htmlFor="email">Email:</Label>
+                        <Label className="font-semibold text-pink-950" htmlFor="code"><UserKey size={8}/>Código:</Label>
                         <Input
                         className="h-10 mt-1"
-                        id="email"
-                        type="email"
-                        placeholder="ex: seu@email.com"
-                        {...register("email",{
-                            required: "O Email é obrigatório",
-                            pattern: {
-                                value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
-                                message: "Digite um email válido"
-                            }})}
+                        id="code"
+                        type="text"
+                        placeholder="#1A2B4F"
+                        {...register("code",{
+                            required: "O Código é obrigatório",
+                        })}
                         />
-                        {errors.email && (<p className="text-red-500 text-xs mt-1">{errors.email.message}</p>)}
+                        {errors.code && (<p className="text-red-500 text-xs mt-1">{errors.code.message}</p>)}
                     </div>
 
                     <div>
-                        <Label className="font-semibold" htmlFor="password">Sua senha:</Label>
+                        <Label className="font-semibold  text-pink-950" htmlFor="password"><Lock size={8}/>Sua senha:</Label>
                         <div className="relative">
 
                         <Input
@@ -137,8 +130,8 @@ if (!isOpen) return null;
                             {...register("password", {
                                 required: "Senha é obrigatória",
                             minLength: {
-                                value: 8,
-                                message: "A senha precisa ter pelo menos 8 caracteres"
+                                value: 4,
+                                message: "A senha precisa ter pelo menos 4 caracteres"
                             }})}
                         />
                         <Button

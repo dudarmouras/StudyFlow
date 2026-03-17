@@ -23,6 +23,9 @@ export const JoinRoom = z.object({
     password: z
         .string({ 
             error: 'A senha é obrigatória' 
+        })
+        .min(4, { 
+            message: 'A senha deve ter no mínimo 4 caracteres' 
         }),
 });
 
