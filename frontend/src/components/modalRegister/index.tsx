@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useForm, SubmitHandler } from "react-hook-form"
 import { useRouter } from "next/navigation"
 
@@ -50,11 +50,13 @@ export default function RegisterModal({isOpen, onClose}: ModalProps) {
         password: data.password,
       });
 
+        console.log(response.data)
+
         setApiSuccess(response.data.message);
         reset(); 
         setTimeout(() => {
         onClose();
-        router.push("/dashboard");
+       // router.push("/dashboard");
       }, 1500);
 
     } catch (err) {
@@ -68,8 +70,8 @@ export default function RegisterModal({isOpen, onClose}: ModalProps) {
 if (!isOpen) return null;
 
     return (
-         <div className="fixed inset-0 bg-purple-500 flex items-center justify-center z-50 overflow-y-auto my-10">
-            <div className="bg-white rounded-lg shadow-x">
+         <div className="fixed inset-0 bg-purple-500/50 flex items-center justify-center overflow-y-auto">
+            <div className="bg-white w-72 rounded-lg border-2 shadow-pink-600">
                 <form onSubmit={handleSubmit(onSubmit)}>
 
                     {apiSuccess && (
@@ -83,26 +85,34 @@ if (!isOpen) return null;
                         </p>
                     )}
                 
-                    <Button
-                        onClick={onClose}
-                        variant="ghost"
-                        className="absolute top-2 right-2 h-6 w-6 rounded-full hover:bg-gray-100"
-                        >
-                        ✕
-                    </Button>
+                    <div className="ml-4">
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={onClose}
+                                variant="ghost"
+                                className="fixed h-6 w-6 mt-1 mr-1 rounded-md font-semibold hover:bg-gray-100 text-pink-800"
+                                >
+                                ✕
+                            </Button>
+                        </div>
 
-                    <p>Cadastrar Nova Conta:</p>
+                        <p className="font-semibold text-[20px] text-gray-700 mt-4">Cadastrar Nova Conta:</p>
+                    </div>
 
+                    <div className="border-b-2 mt-3 border-purple-300"></div>
+                
+                    <div className="flex flex-col my-4 mx-4 gap-4">
                     <div>
-                        <Label htmlFor="name">Seu nome:</Label>
+                        <Label className="font-semibold" htmlFor="name">Seu nome:</Label>
                         <Input
+                        className="h-10 mt-1"
                         id="name"
                         type="text"
                         placeholder="Como você quer ser chamado?"
                         {...register("name", {
                         required: "O Nome é obrigatório",
                         minLength: {
-                        value: 3,
+                            value: 3,
                         message: "O Nome precisa ter pelo menos 3 caracteres"
                     }})}
                         />
@@ -110,8 +120,9 @@ if (!isOpen) return null;
                     </div>
 
                     <div>
-                        <Label htmlFor="email">Email:</Label>
+                        <Label className="font-semibold" htmlFor="email">Email:</Label>
                         <Input
+                        className="h-10 mt-1"
                         id="email"
                         type="email"
                         placeholder="ex: seu@email.com"
@@ -122,19 +133,20 @@ if (!isOpen) return null;
                                 message: "Digite um email válido"
                             }})}
                         />
-                        {errors.email && <p style={{color: "#f00"}}>{errors.email.message}</p>}
+                        {errors.email && (<p className="text-red-500 text-xs mt-1">{errors.email.message}</p>)}
                     </div>
 
                     <div>
-                        <Label htmlFor="password">Sua senha:</Label>
+                        <Label className="font-semibold" htmlFor="password">Sua senha:</Label>
                         <div className="relative">
 
                         <Input
+                        className="h-10 mt-1"
                         id="password"
                         type={showPassword ? "text" : "password"}
                         placeholder="Crie uma senha segura"
                         {...register("password", {
-                        required: "Senha é obrigatória",
+                            required: "Senha é obrigatória",
                         minLength: {
                             value: 8,
                             message: "A senha precisa ter pelo menos 8 caracteres"
@@ -143,16 +155,17 @@ if (!isOpen) return null;
                         <Button
                             type="button"
                             onClick={() => setShowPassword(prev => !prev)}
-                            className="absolute right-3 top-1/2 text-gray-400 hover:text-gray-600 text-sm cursor cursor-pointer"
+                            className="absolute right-2 top-2 text-white bg-pink-500 hover:text-gray-600 text-sm cursor cursor-pointer"
                             aria-label={showPassword ? "Esconder senha" : "Mostrar senha"}
                         >
-                            {showPassword ? <Eye size={16} /> : <EyeOff size={16} />}
+                            {showPassword ? <Eye size={10} /> : <EyeOff size={10} />}
                         </Button>
-                        {errors.password && <p style={{color: "#f00"}}>{errors.password.message}</p>}
+                        {errors.password && (<p className="text-red-500 text-xs mt-1">{errors.password.message}</p>)}
                         </div>
                     </div>
 
-                    <Button type="submit" className="cursor-pointer cursor w-full" disabled={isSubmitting}>Cadastrar</Button>
+                    <Button type="submit" className="cursor-pointer cursor w-full bg-linear-to-br from-pink-600 to-purple-500 text-white font-bold h-9" disabled={isSubmitting}>Cadastrar</Button>
+                    </div>
                 </form>
             </div>
         </div>

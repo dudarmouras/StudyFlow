@@ -4,6 +4,7 @@ import { User, UpdateUser } from '../DTOs'
 import jwt from 'jsonwebtoken';
 
 class UserController {
+// Hash + getByEmail method + get all users
 
     // Creating user with DTO validation and Repository functions
     async create(req: Request, res: Response, next: NextFunction ){
