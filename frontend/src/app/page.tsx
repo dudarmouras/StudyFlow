@@ -3,15 +3,16 @@
 import CardInformation from "@/components/cardInformation";
 import Header from "@/components/header";
 import RegisterModal from "@/components/modalRegister";
-import { Button
+import { Button } from "@/components/ui/button";
+import LoginModal from "@/components/modalLogin";
 
- } from "@/components/ui/button";
 import React from 'react'
 import { Users } from 'lucide-react'
 
 export default function Home() {
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+  const [isLoginOpen, setIsLoginOpen] = React.useState(false);
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
@@ -32,6 +33,16 @@ export default function Home() {
     <RegisterModal
       isOpen={isModalOpen}
       onClose={() => setIsModalOpen(false)}
+    />
+
+    <Button className="bg-pink-700! text-white! shadow-md hover:bg-pink-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
+      onClick={() => setIsLoginOpen(true)}>
+      Login
+    </Button>
+
+    <LoginModal
+      isOpen={isLoginOpen}
+      onClose={() => setIsLoginOpen(false)}
     />
    
       </main>

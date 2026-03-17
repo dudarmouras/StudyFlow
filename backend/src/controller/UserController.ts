@@ -2,9 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import { UserRepository } from  '../repository'
 import { User, UpdateUser } from '../DTOs'
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs'
 
 class UserController {
-// Hash + getByEmail method + get all users
 
     // Creating user with DTO validation and Repository functions
     async create(req: Request, res: Response, next: NextFunction ){
@@ -21,7 +21,11 @@ class UserController {
                 return;
             }
 
-            const user = await UserRepository.create( userData.data );
+            const hashedPassword = await bcrypt.hash(userData.data.password, 8);
+            const user = await UserRepository.create( {
+                    ...userData.data,
+                    password: hashedPassword,  
+            } );
             
             const token = jwt.sign(
                 { id: user.id },                          

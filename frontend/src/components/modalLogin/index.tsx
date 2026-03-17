@@ -12,7 +12,7 @@ import { Eye, EyeOff } from "lucide-react"
 import api from "../../services/api"
 import { AxiosError } from "axios"   
 
-interface ModalProps {
+interface ModalLoginProps {
   isOpen: boolean;
   onClose: () => void;
 }
@@ -21,51 +21,53 @@ type ApiErrorResponse = {
   message: string;
 }
 
-type FormData = {
-  name: string;
+type FormLoginData = {
   email: string;
   password: string;
 }
 
-export default function RegisterModal({isOpen, onClose}: ModalProps) {
+export default function LoginModal({isOpen, onClose}: ModalLoginProps) {
     const router = useRouter();
-    
+
     const [apiError, setApiError] = useState<string | null>(null);
     const [apiSuccess, setApiSuccess] = useState<string | null>(null);
-
     const [showPassword, setShowPassword] = useState(false);
-    
+
     const {
         register, // Connects inputs to react-hook-form
         handleSubmit, // Validates all variables before sending
         reset, // Clean all fields
         formState: { errors, isSubmitting } // Any errors message for each object
-    } = useForm<FormData>();
+    } = useForm<FormLoginData>();
 
-    const onSubmit: SubmitHandler<FormData> = async (data) => {
-    setApiError(null);
-    setApiSuccess(null);
+    const onSubmit: SubmitHandler<FormLoginData> = async (data) => {
+        setApiError(null);
+        setApiSuccess(null);
 
-    try {
-      const response = await api.post("/user", {
-        name: data.name,
-        email: data.email,
-        password: data.password,
+        try {
+        const response = await api.post("/login", {
+            email: data.email,
+            password: data.password,
       });
 
         console.log(response.data)
 
+        // Save the Bearer token
+        const token = response.data.token;
+        localStorage.setItem("token", token);
+
         setApiSuccess(response.data.message);
         reset(); 
+
         setTimeout(() => {
-        onClose();
-       // router.push("/dashboard");
-      }, 1500);
+            onClose();
+        router.push("/dashboard");
+        }, 1500);
 
     } catch (err) {
         const axiosErr = err as AxiosError<ApiErrorResponse>;
         setApiError(
-        axiosErr.response?.data?.message ?? "Erro inesperado. Tente novamente."
+        axiosErr.response?.data?.message ?? "Email ou senha inválidos"
       );
     }
 };
@@ -99,28 +101,12 @@ if (!isOpen) return null;
                             </Button>
                         </div>
 
-                        <p className="font-semibold text-[20px] text-gray-700 mt-4">Cadastrar Nova Conta:</p>
+                        <p className="font-semibold text-[20px] text-gray-700 mt-4">Login:</p>
                     </div>
 
                     <div className="border-b-2 mt-3 border-purple-300"></div>
                 
                     <div className="flex flex-col my-4 mx-4 gap-4">
-                    <div>
-                        <Label className="font-semibold" htmlFor="name">Seu nome:</Label>
-                        <Input
-                        className="h-10 mt-1"
-                        id="name"
-                        type="text"
-                        placeholder="Como você quer ser chamado?"
-                        {...register("name", {
-                        required: "O Nome é obrigatório",
-                        minLength: {
-                            value: 3,
-                        message: "O Nome precisa ter pelo menos 3 caracteres"
-                    }})}
-                        />
-                        {errors.name && (<p className="text-red-500 text-xs mt-1">{errors.name.message}</p>)}
-                    </div>
 
                     <div>
                         <Label className="font-semibold" htmlFor="email">Email:</Label>
@@ -144,16 +130,16 @@ if (!isOpen) return null;
                         <div className="relative">
 
                         <Input
-                        className="h-10 mt-1"
-                        id="password"
-                        type={showPassword ? "text" : "password"}
-                        placeholder="Crie uma senha segura"
-                        {...register("password", {
-                            required: "Senha é obrigatória",
-                        minLength: {
-                            value: 8,
-                            message: "A senha precisa ter pelo menos 8 caracteres"
-                        }})}
+                            className="h-10 mt-1"
+                            id="password"
+                            type={showPassword ? "text" : "password"}
+                            placeholder="Crie uma senha segura"
+                            {...register("password", {
+                                required: "Senha é obrigatória",
+                            minLength: {
+                                value: 8,
+                                message: "A senha precisa ter pelo menos 8 caracteres"
+                            }})}
                         />
                         <Button
                             type="button"
