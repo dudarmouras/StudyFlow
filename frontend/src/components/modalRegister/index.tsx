@@ -73,7 +73,7 @@ export default function RegisterModal({isOpen, onClose}: ModalProps) {
 if (!isOpen) return null;
 
     return (
-         <div className="fixed inset-0 bg-purple-500/50 flex items-center justify-center overflow-y-auto">
+         <div className="fixed inset-0 transition-colors bg-purple-300/60 flex items-center justify-center overflow-y-auto">
             <div className="bg-white w-72 rounded-lg border-2 shadow-pink-600">
                 <form onSubmit={handleSubmit(onSubmit)}>
 
@@ -93,7 +93,7 @@ if (!isOpen) return null;
                             <Button
                                 onClick={onClose}
                                 variant="ghost"
-                                className="fixed h-6 w-6 mt-1 mr-1 rounded-md font-semibold hover:bg-gray-100 text-pink-800"
+                                className="cursor cursor-pointer fixed h-6 w-6 mt-1 mr-1 rounded-md font-semibold hover:bg-gray-100 text-pink-800"
                                 >
                                 ✕
                             </Button>

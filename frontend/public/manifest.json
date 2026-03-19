@@ -1,0 +1,21 @@
+{
+  "name": "StudyFlow",
+  "icons": [
+    {
+      "src": "/img/favicon192.svg",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/img/favicon512.svg",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "background_color": "#FFFFFF",
+  "description": "StudyFlow Front Application",
+  "display": "fullscreen",
+  "start_url": "/",
+  "theme_color": "#fc92cb",
+  "favicon": "/img/favicon192.svg"
+}

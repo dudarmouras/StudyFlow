@@ -1,74 +1,85 @@
 "use client";
 
 import CardInformation from "@/components/cardInformation";
-import Header from "@/components/header";
 import RegisterModal from "@/components/modalRegister";
-import { Button } from "@/components/ui/button";
 import LoginModal from "@/components/modalLogin";
-import CreateRoomModal from "@/components/modalCreate";
-import LoginRoomModal from "@/components/modalJoin";
+import { Button } from "@/components/ui/button";
 
 import React from 'react'
-import { Users } from 'lucide-react'
+import { Users , Sparkles, Timer, ListCheck } from 'lucide-react'
 
 export default function Home() {
 
   const [isModalOpen, setIsModalOpen] = React.useState(false);
   const [isLoginOpen, setIsLoginOpen] = React.useState(false);
-  const [isCreateRoomOpen, setIsCreateRoomOpen] = React.useState(false);
-  const [isLoginRoomOpen, setIsLoginRoomOpen] = React.useState(false);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-      <Header
-        roomName="Estudos Duda"
-        roomCode="#12A3DF"/>
-       <CardInformation 
-        icon={Users} 
-        title="Estude em Grupo" 
-        description="Convide amigos e acompanhe o progresso de todos em tempo real" 
-    />
-    <Button className="bg-red-700! text-white! shadow-md hover:bg-red-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
-      onClick={() => setIsModalOpen(true)}>
-      Cadastre-se
-    </Button>
+    <div className="bg-pink-100 min-h-screen w-full">
+      <main className="mx-auto w-full py-16 flex flex-col gap-8">
 
-    <RegisterModal
-      isOpen={isModalOpen}
-      onClose={() => setIsModalOpen(false)}
-    />
+        <section className="px-4 flex flex-col gap-8">
+          <div className="flex flex-col gap-4 justify-center items-center mt-6">
+             <div className='border rounded-2xl w-20 h-20 flex justify-center shadow-md  shadow-pink-300 items-center bg-linear-to-br from-pink-600 to-purple-500 ml-4'>
+                <Sparkles className='flex justify-center items-center w-8 h-8 text-white'/>
+            </div>
 
-    <Button className="bg-pink-700! text-white! shadow-md hover:bg-pink-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
-      onClick={() => setIsLoginOpen(true)}>
-      Login
-    </Button>
+            <div className="flex flex-row text-6xl font-bold">
+              <p className="text-black antialiased">Study</p>
+              <p className="text-pink-500 antialiased">Flow</p>
+            </div>
 
-    <LoginModal
-      isOpen={isLoginOpen}
-      onClose={() => setIsLoginOpen(false)}
-    />
+            <div className="w-160 text-gray-700">
+              <p className="text-xl flex justify-center items-center">Crie salas de estudo, acompanhe suas tarefas e mantenha o foco com</p>
+              <p className="text-xl flex justify-center items-center"> seus amigos usando o timer Pomodoro</p>
+            </div>
+          </div>
+        </section>
 
-    <Button className="bg-purple-700! text-white! shadow-md hover:bg-pink-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
-      onClick={() => setIsCreateRoomOpen(true)}>
-      Criar Sala
-    </Button>
+        <div className="flex flex-wrap gap-8 justify-center items-center">
+        
+        <div className="p-px rounded-md bg-linear-to-br from-pink-600 to-purple-500 shadow-md">
+          <Button className= 'h-12 w-full rounded-md bg-white text-pink-600 hover:bg-white hover:-translate-y-1 hover:scale-110 hover:text-pink-500 py-2 sm:py-2.5 sm:px-8 text-base sm:text-lg cursor-pointer transition delay-150 duration-300 ease-in-out active:translate-y-0.5 active:opacity-80'
+            onClick={() => setIsLoginOpen(true)}>
+            Login
+          </Button>
+        </div>
 
-    <CreateRoomModal
-      isOpen={isCreateRoomOpen}
-      onClose={() => setIsCreateRoomOpen(false)}
-    />
+          <LoginModal
+            isOpen={isLoginOpen}
+            onClose={() => setIsLoginOpen(false)}
+          />
+        
+          <Button className="h-12 bg-linear-to-br from-pink-600 to-purple-500 transition delay-150 hover:-translate-y-1 hover:scale-110 hover:text-pink-500 text-white! shadow-md py-2 sm:py-2.5 sm:px-8 text-base sm:text-lg cursor-pointer duration-300 ease-in-out active:translate-y-0.5 active:opacity-80"
+            onClick={() => setIsModalOpen(true)}>
+            Cadastre-se
+          </Button>
 
-    <Button className="bg-blue-700! text-white! shadow-md hover:bg-pink-800! hover:text-white py-2 sm:py-2.5 px-6 sm:px-8 text-base sm:text-lg cursor-pointer transition-all duration-150 active:translate-y-0.5 active:opacity-80 active:shadow-none"
-      onClick={() => setIsLoginRoomOpen(true)}>
-      Login na Sala
-    </Button>
+          <RegisterModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+          />
+          </div>
 
-    <LoginRoomModal
-      isOpen={isLoginRoomOpen}
-      onClose={() => setIsLoginRoomOpen(false)}
-    />
-   
+        <section className="flex flex-row gap-4 justify-center items-center">
+          <CardInformation 
+            icon={Users} 
+            title="Estude em Grupo" 
+            description="Convide amigos e acompanhe o progresso de todos em tempo real" 
+            />
+
+          <CardInformation 
+            icon={ListCheck} 
+            title="Gerencie tarefas" 
+            description="Organize suas tarefas e marque como concluídas" 
+            />
+
+          <CardInformation 
+            icon={Timer} 
+            title="Pomodoro Timer" 
+            description="Foque nos estudos com Timer personalizável" 
+            />
+        </section>
+
       </main>
     </div>
   );
