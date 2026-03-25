@@ -31,6 +31,12 @@ class RoomParticipantRepository {
             where: { userId, roomId }
         });
     }
+
+    async findByUserAndRoom(userId: string, roomId: string) {
+        return await prisma.roomParticipant.findFirst({
+            where: { userId, roomId }
+        });
+    }
 }
 
 export default new RoomParticipantRepository();

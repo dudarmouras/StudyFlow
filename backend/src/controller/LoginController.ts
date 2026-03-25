@@ -39,15 +39,22 @@ class LoginController {
         { expiresIn: '7d' }
       );
 
-      res.status(200).json({
-        message: 'Login realizado com sucesso',
-        token,
-        data: {
-          id: user.id,
-          name: user.name,
-          email: user.email,
-        }
-      });
+      res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000, // 7 dias em ms
+    });
+
+    res.status(200).json({
+      message: 'Login realizado com sucesso',
+      token, // mantém no body também, pro localStorage no client
+      data: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+      }
+    });
 
     } catch (error) {
       return next(error);

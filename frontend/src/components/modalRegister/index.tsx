@@ -27,6 +27,11 @@ type FormData = {
   password: string;
 }
 
+function setCookie(name: string, value: string, days: number) {
+  const maxAge = days * 60 * 60 * 24
+  document.cookie = `${name}=${value}; path=/; max-age=${maxAge}`
+}
+
 export default function RegisterModal({isOpen, onClose}: ModalProps) {
     const router = useRouter();
     
@@ -55,11 +60,16 @@ export default function RegisterModal({isOpen, onClose}: ModalProps) {
 
         console.log(response.data)
 
+        const token = response.data.token
+        localStorage.setItem("token", token)
+        setCookie("token", token, 7)
+        
         setApiSuccess(response.data.message);
+
         reset(); 
         setTimeout(() => {
         onClose();
-       // router.push("/dashboard");
+        router.push("/roomDecision");
       }, 1500);
 
     } catch (err) {

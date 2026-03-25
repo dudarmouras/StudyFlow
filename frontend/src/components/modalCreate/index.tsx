@@ -58,7 +58,7 @@ export default function CreateRoomModal({isOpen, onClose}: ModalProps) {
         setTimeout(() => {
         onClose();
 
-        router.push("/dashboard");
+        router.push(`/room/${response.data.data.roomId}`);
 
       }, 1500);
 
@@ -93,7 +93,7 @@ if (!isOpen) return null;
                             <Button
                                 onClick={onClose}
                                 variant="ghost"
-                                className="fixed h-6 w-6 mt-1 mr-1 rounded-md font-semibold hover:bg-gray-100 text-pink-800"
+                                className="cursor cursor-pointer fixed h-6 w-6 mt-1 mr-1 rounded-md font-semibold hover:bg-gray-100 text-pink-800"
                                 >
                                 ✕
                             </Button>

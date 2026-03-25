@@ -1,12 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
-import { RoomParticipantRepository } from  '../repository'
+import { RoomParticipantRepository, RoomRepository } from  '../repository'
 
 class RoomParticipantController {
 
     async readByRoom(req: Request, res: Response, next: NextFunction){
         try{
             const roomId = req.params.roomId as string;
-            const roomParticipant = RoomParticipantRepository.findByRoom(roomId);
+            const roomParticipant = await RoomParticipantRepository.findByRoom(roomId);
 
             res.status(200).json({ data: roomParticipant });
         }
@@ -18,7 +18,7 @@ class RoomParticipantController {
     async readByUser(req: Request, res: Response, next: NextFunction){
         try{
             const userId = req.params.userId as string;
-            const rooms = RoomParticipantRepository.findByUser(userId);
+            const rooms = await RoomParticipantRepository.findByUser(userId);
 
             res.status(200).json({ data: rooms });
         }
@@ -34,6 +34,12 @@ class RoomParticipantController {
             const userId = req.user?.id as string;
 
             await RoomParticipantRepository.delete(userId, roomId);
+             const remaining = await RoomParticipantRepository.findByRoom(roomId)
+
+            // Delete room if length is 0
+            if (remaining.length === 0) {
+            await RoomRepository.delete(roomId) 
+            }
             res.status(200).json({ message: 'Left the room sucessfully' });
         }
         catch(error){

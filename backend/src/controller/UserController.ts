@@ -3,7 +3,7 @@ import { UserRepository } from  '../repository'
 import { User, UpdateUser } from '../DTOs'
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs'
-
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 class UserController {
 
     // Creating user with DTO validation and Repository functions
@@ -41,6 +41,12 @@ class UserController {
 
         }
         catch(error){
+            if (error instanceof PrismaClientKnownRequestError ) {
+            if (error.code === 'P2002') {
+                res.status(409).json({ message: 'Email já cadastrado' })
+                return
+            }
+            }
             return next(error);
         }
     }

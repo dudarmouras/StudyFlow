@@ -1,0 +1,248 @@
+"use client"
+
+import { useEffect, useState, useRef } from "react"
+import api from "@/services/api"
+import { AxiosError } from "axios"
+import { Plus, Check, MoreVertical, Pencil, Trash2 } from "lucide-react"
+import { Input } from "../ui/input"
+
+type Task = {
+  id: string
+  title: string
+  isDone: boolean
+  userId: string
+}
+
+type Props = {
+  roomId: string
+  currentUserId: string
+}
+
+export default function TaskList({ roomId, currentUserId }: Props) {
+  const [tasks, setTasks]               = useState<Task[]>([])
+  const [loading, setLoading]           = useState(true)
+  const [error, setError]               = useState<string | null>(null)
+  const [newTaskTitle, setNewTaskTitle] = useState("")
+  const [editingId, setEditingId]       = useState<string | null>(null)
+  const [editingTitle, setEditingTitle] = useState("")
+  const [openMenuId, setOpenMenuId]     = useState<string | null>(null)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  // Clicking outside of menu closes it
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside)
+    return () => document.removeEventListener("mousedown", handleClickOutside)
+  }, [])
+
+  // Fetch tasks by ID
+  useEffect(() => {
+    const fetchTasks = async () => {
+      setLoading(true)
+      try {
+        const response = await api.get(`/tasks/room/${roomId}`)
+        setTasks(response.data.data)
+      } catch (err) {
+        const axiosErr = err as AxiosError<{ message: string }>
+        setError(axiosErr.response?.data?.message ?? "Erro ao carregar tasks.")
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchTasks()
+  }, [roomId])
+
+  // Posts new taks
+  const handleCreate = async () => {
+    if (!newTaskTitle.trim()) return
+    try {
+      const response = await api.post("/tasks/create", { title: newTaskTitle, roomId })
+      setTasks(prev => [...prev, response.data.data])
+      setNewTaskTitle("")
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message: string }>
+      setError(axiosErr.response?.data?.message ?? "Erro ao criar task.")
+    }
+  }
+
+  // Update tasks to Is Done
+  const handleToggle = async (task: Task) => {
+    try {
+      const response = await api.put(`/tasks/${task.id}`, { isDone: !task.isDone })
+      setTasks(prev => prev.map(t => t.id === task.id ? response.data.data : t))
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message: string }>
+      setError(axiosErr.response?.data?.message ?? "Erro ao atualizar task.")
+    }
+  }
+
+  // Update tasks by Name
+  const handleEdit = async (taskId: string) => {
+    if (!editingTitle.trim()) return
+    try {
+      const response = await api.put(`/tasks/${taskId}`, { title: editingTitle })
+      setTasks(prev => prev.map(t => t.id === taskId ? response.data.data : t))
+      setEditingId(null)
+      setEditingTitle("")
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message: string }>
+      setError(axiosErr.response?.data?.message ?? "Erro ao editar task.")
+    }
+  }
+
+  // Deletes task
+  const handleDelete = async (taskId: string) => {
+    try {
+      await api.delete(`/tasks/${taskId}`)
+      setTasks(prev => prev.filter(t => t.id !== taskId))
+      setOpenMenuId(null)
+    } catch (err) {
+      const axiosErr = err as AxiosError<{ message: string }>
+      setError(axiosErr.response?.data?.message ?? "Erro ao deletar task.")
+    }
+  }
+
+  if (loading) return <p className="text-sm text-gray-400">Carregando tasks...</p>
+  if (error)   return <p className="text-sm text-red-500">{error}</p>
+
+  // Separate task by user or not
+  const myTasks    = tasks.filter(t => t.userId === currentUserId)
+  const otherTasks = tasks.filter(t => t.userId !== currentUserId)
+
+  // Progress bar
+  const progressPercent = myTasks.length === 0
+    ? 0
+    : Math.round((myTasks.filter(t => t.isDone).length / myTasks.length) * 100)
+
+  return (
+    <div className="flex flex-col gap-6">
+
+      {/* ── My tasks ── */}
+      <div className="flex flex-col gap-3">
+
+        {/* Header + progress */}
+        <div className="flex flex-col gap-1">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold text-pink-600 text-lg">Minhas Tasks</h2>
+            <span className="text-xs text-gray-400">{progressPercent}%</span>
+          </div>
+          <div className="w-full h-2 bg-pink-100 rounded-full overflow-hidden">
+            <div
+              className="h-2 bg-pink-500 rounded-full transition-all duration-300"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+        </div>
+
+        {/* List */}
+        <ul className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
+          {myTasks.map(task => (
+            <li key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-pink-50 border border-pink-100">
+
+              {/* Checkbox */}
+              <button
+                onClick={() => handleToggle(task)}
+                className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
+                  task.isDone ? 'bg-pink-500 border-pink-500' : 'border-gray-300 hover:border-pink-400'
+                }`}
+              >
+                {task.isDone && <Check size={10} className="text-white" />}
+              </button>
+
+              {/* Title */}
+              {editingId === task.id ? (
+                <Input
+                  autoFocus
+                  value={editingTitle}
+                  onChange={e => setEditingTitle(e.target.value)}
+                  className="h-7 text-sm flex-1"
+                  onKeyDown={e => e.key === 'Enter' && handleEdit(task.id)}
+                  onBlur={() => handleEdit(task.id)}
+                />
+              ) : (
+                <span className={`flex-1 text-sm ${task.isDone ? 'line-through text-gray-400' : 'text-gray-700'}`}>
+                  {task.title}
+                </span>
+              )}
+
+              {/* Menu */}
+              <div className="relative" ref={openMenuId === task.id ? menuRef : null}>
+                <button
+                  onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
+                  className="text-gray-400 hover:text-pink-500 p-1 rounded"
+                >
+                  <MoreVertical size={14} />
+                </button>
+
+                {openMenuId === task.id && (
+                  <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-lg shadow-md py-1 w-32">
+                    <button
+                      onClick={() => { setEditingId(task.id); setEditingTitle(task.title); setOpenMenuId(null) }}
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-pink-50"
+                    >
+                      <Pencil size={12} /> Editar
+                    </button>
+                    <button
+                      onClick={() => handleDelete(task.id)}
+                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
+                    >
+                      <Trash2 size={12} /> Excluir
+                    </button>
+                  </div>
+                )}
+              </div>
+
+            </li>
+          ))}
+
+          {myTasks.length === 0 && (
+            <p className="text-sm text-purple-400">Nenhuma task ainda. Crie uma!</p>
+          )}
+        </ul>
+
+        {/* Input new task */}
+        <div className="flex gap-2 mt-1">
+          <Input
+            value={newTaskTitle}
+            onChange={e => setNewTaskTitle(e.target.value)}
+            placeholder="Nova tarefa..."
+            className="h-9 text-sm"
+            onKeyDown={e => e.key === 'Enter' && handleCreate()}
+          />
+          <button
+            onClick={handleCreate}
+            className="h-9 w-9 shrink-0 bg-pink-500 hover:bg-pink-600 text-white rounded-lg flex items-center justify-center"
+          >
+            <Plus size={16} />
+          </button>
+        </div>
+      </div>
+
+      {/* ── Friends Tasks ── */}
+      {otherTasks.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <h2 className="font-semibold text-purple-700 text-lg ">Tasks dos colegas</h2>
+          <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+            {otherTasks.map(task => (
+              <li key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-purple-50 border border-purple-100">
+                <div className={`w-5 h-5 rounded border-2 shrink-0 flex items-center justify-center ${
+                  task.isDone ? 'bg-purple-400 border-purple-400' : 'border-gray-300'
+                }`}>
+                  {task.isDone && <Check size={10} className="text-white" />}
+                </div>
+                <span className={`text-sm ${task.isDone ? 'line-through text-gray-400' : 'text-gray-600'}`}>
+                  {task.title}
+                </span>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+    </div>
+  )
+}

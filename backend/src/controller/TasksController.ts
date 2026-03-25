@@ -6,7 +6,11 @@ class TasksController{
 
     async create(req: Request, res: Response, next: NextFunction){
         try{
-            const tasksData = Tasks.safeParse(req.body);
+            const userId = req.user?.id as string
+            const tasksData = Tasks.safeParse({
+            ...req.body,
+            userId,
+            });;
 
             if(!tasksData.success){
                 const error = tasksData.error.issues.map((err) => err.message);
@@ -107,7 +111,7 @@ class TasksController{
     async readByUser(req: Request, res: Response, next: NextFunction){
         try{
             const userId = req.params.userId as string;
-            const tasks = TasksRepository.findByUser(userId);
+            const tasks = await TasksRepository.findByUser(userId);
 
             res.status(200).json({ data: tasks });
         }
@@ -119,7 +123,7 @@ class TasksController{
     async readByRoomId(req: Request, res: Response, next: NextFunction){
         try{
             const roomId = req.params.roomId as string;
-            const tasks = TasksRepository.findByRoom(roomId);
+            const tasks = await TasksRepository.findByRoom(roomId);
 
             res.status(200).json({ data: tasks });
         }

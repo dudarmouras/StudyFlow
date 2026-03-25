@@ -15,9 +15,9 @@ export default function Header({roomName, roomCode}:Header){
 
             <div className="flex flex-col">
 
-                <div className='font-semibold text-gray-800 text-xl '>{roomName}</div>
+                <div className='font-bold text-pink-600 text-xl '>{roomName}</div>
 
-                <div className="flex flex-row font-light text-gray-800 text-md">
+                <div className="flex flex-row font-light text-gray-800 text-md gap-1">
                     <p>Código: </p>
                     <p>{roomCode}</p>
                 </div>

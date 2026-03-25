@@ -134,6 +134,12 @@ class RoomController {
                 return;
             }
 
+            const existing = await RoomParticipantRepository.findByUserAndRoom(userId, room.id)
+                if (existing) {
+                res.status(409).json({ message: 'Você já está nessa sala' })
+                return
+            }
+
             const isPasswordRight = await compare(joinData.data.password, room.password);
 
             if(!isPasswordRight){
@@ -165,12 +171,11 @@ class RoomController {
                 res.status(404).json({ 
                 message: 'Room not found' 
             });
-
+            }
             res.status(200).json({ 
                 data: room 
             });
                 return;
-            }
         }
 
         catch(error){
@@ -187,12 +192,11 @@ class RoomController {
                 res.status(404).json({ 
                 message: 'Room not found' 
             });
-
+            }
             res.status(200).json({ 
                 data: room 
             });
                 return;
-            }
         }
         catch(error){
             return next(error);
