@@ -146,7 +146,7 @@ if (!isOpen) return null;
                         </div>
                     </div>
 
-                    <Button type="submit" className="cursor-pointer cursor w-full bg-linear-to-br from-pink-600 to-purple-500 text-white font-bold h-9" disabled={isSubmitting}>Cadastrar</Button>
+                    <Button type="submit" className="cursor-pointer cursor w-full bg-linear-to-br from-pink-600 to-purple-500 text-white font-bold h-9" disabled={isSubmitting}>Logar</Button>
                     </div>
                 </form>
             </div>

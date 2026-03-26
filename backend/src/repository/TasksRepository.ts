@@ -33,6 +33,12 @@ class TasksRepository{
         const task = await prisma.tasks.findUnique({where: { id }});
         return task;
     }
+
+    async deleteByRoom(roomId: string) {
+        return prisma.tasks.deleteMany({
+            where: {roomId }
+        });
+    }
 }
 
 export default new TasksRepository();

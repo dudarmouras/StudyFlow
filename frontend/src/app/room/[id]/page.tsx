@@ -66,7 +66,7 @@ export default function Room() {
             roomCode={roomCode || "..."}
             roomName={roomName || "Carregando..."}
           />
-          <LogoutButton/>
+          <LogoutButton roomId={roomId}/>
         </div>
       </div>
 
@@ -85,7 +85,7 @@ export default function Room() {
         </section>
         
         <aside className="w-72 shrink-0">
-          <PomodoroTimer />
+          <PomodoroTimer roomId={roomId} />
         </aside>
       </main>
     </div>

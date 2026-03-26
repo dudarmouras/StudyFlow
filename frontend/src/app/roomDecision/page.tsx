@@ -36,7 +36,6 @@ export default function RoomDecision() {
 
         <div className="flex flex-wrap gap-8 justify-center items-center">
 
-
         <div className="flex flex-col">
             <p className="text-pink-700 font-semibold text-2xl flex justify-center items-center mt-8">Escolha entre criar uma sala para você e seus amigos ou entrar uma sala já criada:</p>
             
@@ -47,7 +46,6 @@ export default function RoomDecision() {
                 Entrar em Sala
             </Button>
         
-
             <ModalJoin
                 isOpen={isJoinOpen}
                 onClose={() => setIsJoinOpen(false)}

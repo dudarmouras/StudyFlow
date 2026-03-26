@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { RoomParticipantRepository, RoomRepository } from  '../repository'
+import { RoomParticipantRepository, RoomRepository, TasksRepository } from  '../repository'
+import { io } from '../server' 
 
 class RoomParticipantController {
 
@@ -28,23 +29,29 @@ class RoomParticipantController {
     }
 
     // Remove a participant from the room
-    async leave(req: Request, res: Response, next: NextFunction){
-        try{
-            const roomId = req.params.roomId as string;
-            const userId = req.user?.id as string;
+    async leave(req: Request, res: Response, next: NextFunction) {
+    try {
+        const roomId = req.params.roomId as string
+        const userId = req.user?.id as string
 
-            await RoomParticipantRepository.delete(userId, roomId);
-             const remaining = await RoomParticipantRepository.findByRoom(roomId)
+        await RoomParticipantRepository.delete(userId, roomId)
 
-            // Delete room if length is 0
-            if (remaining.length === 0) {
-            await RoomRepository.delete(roomId) 
-            }
-            res.status(200).json({ message: 'Left the room sucessfully' });
+        io.to(roomId).emit('participant-left', userId)
+        io.to(roomId).emit('user-tasks-cleared', userId)
+
+        const remaining = await RoomParticipantRepository.findByRoom(roomId)
+
+        if (remaining.length === 0) {
+        io.to(roomId).emit('room-closed')
+        await TasksRepository.deleteByRoom(roomId)   
+        await RoomParticipantRepository.deleteByRoom(roomId)
+        await RoomRepository.delete(roomId)   
         }
-        catch(error){
-            return next(error);
-        }
+
+        res.status(200).json({ message: 'Left the room successfully' })
+    } catch (error) {
+        return next(error)
+    }
     }
 }
 

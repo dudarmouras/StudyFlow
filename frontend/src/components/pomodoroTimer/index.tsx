@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from "react"
 import { RotateCcw, Pause, Play, AlarmClock} from "lucide-react"
 import { Button } from "../ui/button"
+import { useSocket } from "@/hooks/useSocket"
 
 type Mode = "pomodoro" | "shortBreak" | "longBreak"
 
@@ -18,23 +19,67 @@ const LABELS: Record<Mode, string> = {
   longBreak:  "Pausa Longa",
 }
 
-export default function PomodoroTimer() {
+type Props = {
+  roomId: string
+}
+
+export default function PomodoroTimer({ roomId }: Props) {
   const [mode, setMode]       = useState<Mode>("pomodoro")
   const [seconds, setSeconds] = useState(TIMES["pomodoro"])
   const [running, setRunning] = useState(false)
+
+  const socket = useSocket(roomId)
+
+    useEffect(() => {
+    if (!socket) return
+
+    socket.off('timer-start')
+    socket.off('timer-pause')
+    socket.off('timer-reset')
+    socket.off('timer-mode')
+
+    socket.on('timer-start', () => setRunning(true))
+    socket.on('timer-pause', () => setRunning(false))
+    socket.on('timer-reset', (incomingMode: Mode) => {
+      setMode(incomingMode)
+      setSeconds(TIMES[incomingMode])
+      setRunning(false)
+    })
+    socket.on('timer-mode', (incomingMode: Mode) => {
+      setMode(incomingMode)
+      setSeconds(TIMES[incomingMode])
+      setRunning(false)
+    })
+
+    return () => {
+      socket.off('timer-start')
+      socket.off('timer-pause')
+      socket.off('timer-reset')
+      socket.off('timer-mode')
+    }
+  }, [socket])
 
   // ── Change Mode ────────────────────────────────
   const handleMode = (newMode: Mode) => {
     setMode(newMode)
     setSeconds(TIMES[newMode])
     setRunning(false)
+    socket?.emit('timer-mode', { roomId, mode: newMode })
   }
 
   // ── Reset ────────────────────────────────────────
   const handleReset = useCallback(() => {
     setSeconds(TIMES[mode])
     setRunning(false)
-  }, [mode])
+    socket?.emit('timer-reset', { roomId, mode })
+  }, [mode, roomId, socket])
+
+  // ── Play/Pause — emite para os outros ────────────
+  const handleToggle = () => {
+    const next = !running
+    setRunning(next)
+    socket?.emit(next ? 'timer-start' : 'timer-pause', roomId)
+  }
 
   // ── Tick ─────────────────────────────────────────
     useEffect(() => {
@@ -131,7 +176,7 @@ export default function PomodoroTimer() {
         </button>
 
         <Button
-          onClick={() => setRunning(prev => !prev)}
+          onClick={handleToggle}
           className="cursor cursor-pointer bg-pink-500 hover:bg-pink-600 text-white px-8 h-10 rounded-xl font-semibold"
         >
           {running

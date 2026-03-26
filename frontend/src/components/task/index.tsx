@@ -5,6 +5,7 @@ import api from "@/services/api"
 import { AxiosError } from "axios"
 import { Plus, Check, MoreVertical, Pencil, Trash2 } from "lucide-react"
 import { Input } from "../ui/input"
+import { useSocket } from '@/hooks/useSocket'
 
 type Task = {
   id: string
@@ -28,6 +29,43 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   const [openMenuId, setOpenMenuId]     = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
+  const socket = useSocket(roomId)
+
+  // Socket events
+    useEffect(() => {
+      if (!socket) return
+
+      socket.off('task-created')
+      socket.off('task-updated')
+      socket.off('task-deleted')
+      socket.off('user-tasks-cleared')
+      
+      socket.on('task-created', (task: Task) => {
+        setTasks(prev =>
+          prev.find(t => t.id === task.id) ? prev : [...prev, task]
+        )
+      })
+
+      socket.on('task-updated', (task: Task) => {
+        setTasks(prev => prev.map(t => t.id === task.id ? task : t))
+      })
+
+      socket.on('task-deleted', (taskId: string) => {
+        setTasks(prev => prev.filter(t => t.id !== taskId))
+      })
+
+      socket.on('user-tasks-cleared', (userId: string) => {
+        setTasks(prev => prev.filter(t => t.userId !== userId))
+      })
+
+      return () => {
+        socket.off('task-created')
+        socket.off('task-updated')
+        socket.off('task-deleted')
+        socket.off('user-tasks-cleared')
+      }
+    }, [socket])
+    
   // Clicking outside of menu closes it
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -60,8 +98,7 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   const handleCreate = async () => {
     if (!newTaskTitle.trim()) return
     try {
-      const response = await api.post("/tasks/create", { title: newTaskTitle, roomId })
-      setTasks(prev => [...prev, response.data.data])
+      await api.post("/tasks/create", { title: newTaskTitle, roomId })
       setNewTaskTitle("")
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>
@@ -72,8 +109,7 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   // Update tasks to Is Done
   const handleToggle = async (task: Task) => {
     try {
-      const response = await api.put(`/tasks/${task.id}`, { isDone: !task.isDone })
-      setTasks(prev => prev.map(t => t.id === task.id ? response.data.data : t))
+      await api.put(`/tasks/${task.id}`, { isDone: !task.isDone })
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>
       setError(axiosErr.response?.data?.message ?? "Erro ao atualizar task.")
@@ -84,8 +120,7 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   const handleEdit = async (taskId: string) => {
     if (!editingTitle.trim()) return
     try {
-      const response = await api.put(`/tasks/${taskId}`, { title: editingTitle })
-      setTasks(prev => prev.map(t => t.id === taskId ? response.data.data : t))
+      await api.put(`/tasks/${taskId}`, { title: editingTitle })
       setEditingId(null)
       setEditingTitle("")
     } catch (err) {
@@ -98,7 +133,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   const handleDelete = async (taskId: string) => {
     try {
       await api.delete(`/tasks/${taskId}`)
-      setTasks(prev => prev.filter(t => t.id !== taskId))
       setOpenMenuId(null)
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>

@@ -3,15 +3,29 @@
 import { useRouter } from "next/navigation"
 import { Button } from "../ui/button"
 import { DoorOpen } from "lucide-react"
+import api from "@/services/api"
 
 function deleteCookie(name: string) {
   document.cookie = `${name}=; path=/; max-age=0`
 }
 
-export default function LogoutButton() {
+type Props = {
+  roomId?: string
+}
+
+export default function LogoutButton({ roomId }: Props) {
   const router = useRouter()
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+     if (roomId) {
+      try {
+        await api.delete(`/roomParticipant/room/${roomId}/leave`)
+        await new Promise(resolve => setTimeout(resolve, 300))
+      } catch (err) {
+        console.error("Erro ao sair da sala:", err)
+      }
+    }
+
     localStorage.removeItem("token")
     deleteCookie("token")
     router.push("/")
