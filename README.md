@@ -2,7 +2,7 @@
 
 Plataforma de estudos colaborativos em tempo real. Crie salas de estudo, gerencie tarefas e mantenha o foco com seus amigos usando o timer Pomodoro.
 
-![StudyFlow](https://img.shields.io/badge/status-em%20desenvolvimento-pink)
+![StudyFlow](https://img.shields.io/badge/status-concluído-pink)
 ![Next.js](https://img.shields.io/badge/Next.js-15-black)
 ![Express](https://img.shields.io/badge/Express-5-lightgrey)
 ![Socket.io](https://img.shields.io/badge/Socket.io-4-white)
