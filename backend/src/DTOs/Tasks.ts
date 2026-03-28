@@ -8,7 +8,7 @@ export const Tasks = z.object({
     isDone: z
         .boolean({ 
             error: 'A tarefa ou foi feita, ou não foi feita', 
-        }),
+        }).default(false),
     userId: z.uuid(),
     roomId: z.uuid(),
     });

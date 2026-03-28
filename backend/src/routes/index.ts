@@ -3,6 +3,7 @@ import RoomRoutes from '../routes/RoomRoutes';
 import UserRoutes from '../routes/UserRoutes';
 import RoomParticipantRoutes from './RoomParticipant';
 import TasksRoutes from './TasksRoutes';
+import LoginRoutes from './LoginRoutes';
 
 const router = express.Router()
 
@@ -11,5 +12,6 @@ router.use('/room', RoomRoutes);
 router.use('/user', UserRoutes);
 router.use('/roomParticipant', RoomParticipantRoutes)
 router.use('/tasks', TasksRoutes);
+router.use('/login', LoginRoutes);  
 
 export default router

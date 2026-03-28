@@ -23,3 +23,8 @@ export const User = z.object({
     });
 
 export const UpdateUser = User.partial();
+
+export const Login = z.object({
+  email: z.email('Digite um email válido'),
+  password: z.string().min(8, 'A senha deve ter no mínimo 8 caracteres'),
+});

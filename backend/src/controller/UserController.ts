@@ -2,7 +2,8 @@ import { Request, Response, NextFunction } from 'express';
 import { UserRepository } from  '../repository'
 import { User, UpdateUser } from '../DTOs'
 import jwt from 'jsonwebtoken';
-
+import bcrypt from 'bcryptjs'
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/client'
 class UserController {
 
     // Creating user with DTO validation and Repository functions
@@ -20,7 +21,11 @@ class UserController {
                 return;
             }
 
-            const user = await UserRepository.create( userData.data );
+            const hashedPassword = await bcrypt.hash(userData.data.password, 8);
+            const user = await UserRepository.create( {
+                    ...userData.data,
+                    password: hashedPassword,  
+            } );
             
             const token = jwt.sign(
                 { id: user.id },                          
@@ -36,6 +41,12 @@ class UserController {
 
         }
         catch(error){
+            if (error instanceof PrismaClientKnownRequestError ) {
+            if (error.code === 'P2002') {
+                res.status(409).json({ message: 'Email já cadastrado' })
+                return
+            }
+            }
             return next(error);
         }
     }

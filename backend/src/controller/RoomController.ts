@@ -1,7 +1,8 @@
-import { RoomRepository , RoomParticipantRepository } from "../repository";
+import { RoomRepository , RoomParticipantRepository, UserRepository } from "../repository";
 import { Request, Response, NextFunction } from 'express';
 import { CreateRoom, UpdateRoom, JoinRoom } from '../DTOs'
 import { compare , hash } from 'bcryptjs';
+import { io } from '../server'
 
 // Lembrar do hash password + o code autogerado
 class RoomController {
@@ -38,7 +39,13 @@ class RoomController {
             
              // Creator as a room participant
             await RoomParticipantRepository.create({userId, roomId: room.id,});
-                
+            const user = await UserRepository.findById(userId)
+            console.log('emitindo participant-joined:', { userId, user })
+                io.to(room.id).emit('participant-joined', {
+                userId,
+                user: { id: userId, name: user?.name ?? '' }
+            })
+
             res.status(201).json({ 
                     message: 'Room created', 
                     data: { 
@@ -134,6 +141,12 @@ class RoomController {
                 return;
             }
 
+            const existing = await RoomParticipantRepository.findByUserAndRoom(userId, room.id)
+                if (existing) {
+                res.status(409).json({ message: 'Você já está nessa sala' })
+                return
+            }
+
             const isPasswordRight = await compare(joinData.data.password, room.password);
 
             if(!isPasswordRight){
@@ -145,6 +158,13 @@ class RoomController {
                 userId,
                 roomId: room.id,
             });
+            
+            const user = await UserRepository.findById(userId)
+                console.log('emitindo participant-joined:', { userId, user })
+                io.to(room.id).emit('participant-joined', {
+                userId,
+                user: { id: userId, name: user?.name ?? '' }
+            })
 
             res.status(200).json({
                 message: 'Joined the room', 
@@ -165,12 +185,11 @@ class RoomController {
                 res.status(404).json({ 
                 message: 'Room not found' 
             });
-
+            }
             res.status(200).json({ 
                 data: room 
             });
                 return;
-            }
         }
 
         catch(error){
@@ -187,12 +206,11 @@ class RoomController {
                 res.status(404).json({ 
                 message: 'Room not found' 
             });
-
+            }
             res.status(200).json({ 
                 data: room 
             });
                 return;
-            }
         }
         catch(error){
             return next(error);

@@ -1,4 +1,4 @@
-import { User, UpdateUser } from './User';
+import { User, UpdateUser, Login } from './User';
 import { JoinRoom, CreateRoom, UpdateRoom } from './Room';
 import { CreateRoomParticipant } from './RoomParticipant';
 import { Tasks, UpdateTasks } from './Tasks'
@@ -6,6 +6,7 @@ import { Tasks, UpdateTasks } from './Tasks'
 export {
   User,
   UpdateUser,
+  Login,
   JoinRoom,
   CreateRoom,
   UpdateRoom,

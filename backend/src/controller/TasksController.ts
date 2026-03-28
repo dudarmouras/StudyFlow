@@ -1,12 +1,17 @@
 import { TasksRepository , UserRepository} from "../repository";
 import { Request, Response, NextFunction } from 'express';
 import { Tasks, UpdateTasks } from '../DTOs'
+import { io } from '../server'
 
 class TasksController{
 
     async create(req: Request, res: Response, next: NextFunction){
         try{
-            const tasksData = Tasks.safeParse(req.body);
+            const userId = req.user?.id as string
+            const tasksData = Tasks.safeParse({
+            ...req.body,
+            userId,
+            });;
 
             if(!tasksData.success){
                 const error = tasksData.error.issues.map((err) => err.message);
@@ -19,6 +24,7 @@ class TasksController{
             }
 
             const task = await TasksRepository.create( tasksData.data );
+            io.to(task.roomId).emit('task-created', task)
 
             res.status(201).json({ 
                 message: 'Task created', 
@@ -61,6 +67,8 @@ class TasksController{
             }
 
             const task = await TasksRepository.update(tasksId , tasksData.data) 
+            io.to(task.roomId).emit('task-updated', task)
+
                 res.status(200).json({ 
                     message: 'Task updated', 
                     data: task 
@@ -88,6 +96,7 @@ class TasksController{
                 return;
             }
             const task = await TasksRepository.delete( tasksId );
+            io.to(existingTask.roomId).emit('task-deleted', tasksId)
 
               if (!task) {
                 res.status(404).json({ 
@@ -107,7 +116,7 @@ class TasksController{
     async readByUser(req: Request, res: Response, next: NextFunction){
         try{
             const userId = req.params.userId as string;
-            const tasks = TasksRepository.findByUser(userId);
+            const tasks = await TasksRepository.findByUser(userId);
 
             res.status(200).json({ data: tasks });
         }
@@ -119,7 +128,7 @@ class TasksController{
     async readByRoomId(req: Request, res: Response, next: NextFunction){
         try{
             const roomId = req.params.roomId as string;
-            const tasks = TasksRepository.findByRoom(roomId);
+            const tasks = await TasksRepository.findByRoom(roomId);
 
             res.status(200).json({ data: tasks });
         }

@@ -1,0 +1,27 @@
+import { Sparkles } from 'lucide-react';
+
+interface Header {
+    roomName: string;
+    roomCode: string;
+}
+
+export default function Header({roomName, roomCode}:Header){
+    return (
+       <div className="w-full bg-white h-20 rounded-2xl border border-gray-300 flex-row items-center flex gap-3">
+            
+            <div className='border rounded-xl w-12 h-12 flex justify-center items-center bg-linear-to-br from-pink-400 to-purple-500 ml-4'>
+                <Sparkles className='flex justify-center items-center w-8 h-8 text-white'/>
+            </div>
+
+            <div className="flex flex-col">
+
+                <div className='font-bold text-pink-600 text-xl '>{roomName}</div>
+
+                <div className="flex flex-row font-light text-gray-800 text-md gap-1">
+                    <p>Código: </p>
+                    <p>{roomCode}</p>
+                </div>
+            </div>
+       </div>
+    );
+}
