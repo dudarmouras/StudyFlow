@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useState, useRef } from "react"
+import { createPortal } from "react-dom"
 import api from "@/services/api"
 import { AxiosError } from "axios"
 import { Plus, Check, MoreVertical, Pencil, Trash2 } from "lucide-react"
@@ -27,57 +28,51 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   const [editingId, setEditingId]       = useState<string | null>(null)
   const [editingTitle, setEditingTitle] = useState("")
   const [openMenuId, setOpenMenuId]     = useState<string | null>(null)
+  const [menuPosition, setMenuPosition] = useState<{ top: number; left: number } | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   const socket = useSocket(roomId)
 
-  // Socket events
-    useEffect(() => {
-      if (!socket) return
+  useEffect(() => {
+    if (!socket) return
 
+    socket.off('task-created')
+    socket.off('task-updated')
+    socket.off('task-deleted')
+    socket.off('user-tasks-cleared')
+
+    socket.on('task-created', (task: Task) => {
+      setTasks(prev => prev.find(t => t.id === task.id) ? prev : [...prev, task])
+    })
+    socket.on('task-updated', (task: Task) => {
+      setTasks(prev => prev.map(t => t.id === task.id ? task : t))
+    })
+    socket.on('task-deleted', (taskId: string) => {
+      setTasks(prev => prev.filter(t => t.id !== taskId))
+    })
+    socket.on('user-tasks-cleared', (userId: string) => {
+      setTasks(prev => prev.filter(t => t.userId !== userId))
+    })
+
+    return () => {
       socket.off('task-created')
       socket.off('task-updated')
       socket.off('task-deleted')
       socket.off('user-tasks-cleared')
-      
-      socket.on('task-created', (task: Task) => {
-        setTasks(prev =>
-          prev.find(t => t.id === task.id) ? prev : [...prev, task]
-        )
-      })
+    }
+  }, [socket])
 
-      socket.on('task-updated', (task: Task) => {
-        setTasks(prev => prev.map(t => t.id === task.id ? task : t))
-      })
-
-      socket.on('task-deleted', (taskId: string) => {
-        setTasks(prev => prev.filter(t => t.id !== taskId))
-      })
-
-      socket.on('user-tasks-cleared', (userId: string) => {
-        setTasks(prev => prev.filter(t => t.userId !== userId))
-      })
-
-      return () => {
-        socket.off('task-created')
-        socket.off('task-updated')
-        socket.off('task-deleted')
-        socket.off('user-tasks-cleared')
-      }
-    }, [socket])
-    
-  // Clicking outside of menu closes it
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
         setOpenMenuId(null)
+        setMenuPosition(null)
       }
     }
-    document.addEventListener("mousedown", handleClickOutside)
-    return () => document.removeEventListener("mousedown", handleClickOutside)
+    document.addEventListener("click", handleClickOutside)
+    return () => document.removeEventListener("click", handleClickOutside)
   }, [])
 
-  // Fetch tasks by ID
   useEffect(() => {
     const fetchTasks = async () => {
       setLoading(true)
@@ -94,7 +89,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
     fetchTasks()
   }, [roomId])
 
-  // Posts new taks
   const handleCreate = async () => {
     if (!newTaskTitle.trim()) return
     try {
@@ -106,7 +100,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
     }
   }
 
-  // Update tasks to Is Done
   const handleToggle = async (task: Task) => {
     try {
       await api.put(`/tasks/${task.id}`, { isDone: !task.isDone })
@@ -116,7 +109,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
     }
   }
 
-  // Update tasks by Name
   const handleEdit = async (taskId: string) => {
     if (!editingTitle.trim()) return
     try {
@@ -129,11 +121,11 @@ export default function TaskList({ roomId, currentUserId }: Props) {
     }
   }
 
-  // Deletes task
   const handleDelete = async (taskId: string) => {
     try {
       await api.delete(`/tasks/${taskId}`)
       setOpenMenuId(null)
+      setMenuPosition(null)
     } catch (err) {
       const axiosErr = err as AxiosError<{ message: string }>
       setError(axiosErr.response?.data?.message ?? "Erro ao deletar task.")
@@ -143,11 +135,9 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   if (loading) return <p className="text-sm text-gray-400">Carregando tasks...</p>
   if (error)   return <p className="text-sm text-red-500">{error}</p>
 
-  // Separate task by user or not
   const myTasks    = tasks.filter(t => t.userId === currentUserId)
   const otherTasks = tasks.filter(t => t.userId !== currentUserId)
 
-  // Progress bar
   const progressPercent = myTasks.length === 0
     ? 0
     : Math.round((myTasks.filter(t => t.isDone).length / myTasks.length) * 100)
@@ -155,10 +145,8 @@ export default function TaskList({ roomId, currentUserId }: Props) {
   return (
     <div className="flex flex-col gap-6">
 
-      {/* ── My tasks ── */}
       <div className="flex flex-col gap-3">
 
-        {/* Header + progress */}
         <div className="flex flex-col gap-1">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold text-pink-600 text-lg">Minhas Tasks</h2>
@@ -172,12 +160,10 @@ export default function TaskList({ roomId, currentUserId }: Props) {
           </div>
         </div>
 
-        {/* List */}
         <ul className="flex flex-col gap-2 max-h-64 overflow-y-auto pr-1">
           {myTasks.map(task => (
             <li key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-pink-50 border border-pink-100">
 
-              {/* Checkbox */}
               <button
                 onClick={() => handleToggle(task)}
                 className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${
@@ -187,7 +173,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
                 {task.isDone && <Check size={10} className="text-white" />}
               </button>
 
-              {/* Title */}
               {editingId === task.id ? (
                 <Input
                   autoFocus
@@ -203,32 +188,22 @@ export default function TaskList({ roomId, currentUserId }: Props) {
                 </span>
               )}
 
-              {/* Menu */}
-              <div className="relative" ref={openMenuId === task.id ? menuRef : null}>
-                <button
-                  onClick={() => setOpenMenuId(openMenuId === task.id ? null : task.id)}
-                  className="text-gray-400 hover:text-pink-500 p-1 rounded"
-                >
-                  <MoreVertical size={14} />
-                </button>
-
-                {openMenuId === task.id && (
-                  <div className="absolute right-0 top-6 z-10 bg-white border border-gray-200 rounded-lg shadow-md py-1 w-32">
-                    <button
-                      onClick={() => { setEditingId(task.id); setEditingTitle(task.title); setOpenMenuId(null) }}
-                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-pink-50"
-                    >
-                      <Pencil size={12} /> Editar
-                    </button>
-                    <button
-                      onClick={() => handleDelete(task.id)}
-                      className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
-                    >
-                      <Trash2 size={12} /> Excluir
-                    </button>
-                  </div>
-                )}
-              </div>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation()
+                  if (openMenuId === task.id) {
+                    setOpenMenuId(null)
+                    setMenuPosition(null)
+                  } else {
+                    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect()
+                    setMenuPosition({ top: rect.bottom + 4, left: rect.right - 128 })
+                    setOpenMenuId(task.id)
+                  }
+                }}
+                className="text-gray-400 hover:text-pink-500 p-1 rounded"
+              >
+                <MoreVertical size={14} />
+              </button>
 
             </li>
           ))}
@@ -238,7 +213,6 @@ export default function TaskList({ roomId, currentUserId }: Props) {
           )}
         </ul>
 
-        {/* Input new task */}
         <div className="flex gap-2 mt-1">
           <Input
             value={newTaskTitle}
@@ -256,10 +230,9 @@ export default function TaskList({ roomId, currentUserId }: Props) {
         </div>
       </div>
 
-      {/* ── Friends Tasks ── */}
       {otherTasks.length > 0 && (
         <div className="flex flex-col gap-2">
-          <h2 className="font-semibold text-purple-700 text-lg ">Tasks dos colegas</h2>
+          <h2 className="font-semibold text-purple-700 text-lg">Tasks dos colegas</h2>
           <ul className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
             {otherTasks.map(task => (
               <li key={task.id} className="flex items-center gap-2 p-2 rounded-lg bg-purple-50 border border-purple-100">
@@ -275,6 +248,34 @@ export default function TaskList({ roomId, currentUserId }: Props) {
             ))}
           </ul>
         </div>
+      )}
+
+      {openMenuId && menuPosition && tasks.find(t => t.id === openMenuId) && createPortal(
+        <div
+          ref={menuRef}
+          className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32"
+          style={{ top: menuPosition.top, left: menuPosition.left }}
+        >
+          <button
+            onClick={() => {
+              const task = tasks.find(t => t.id === openMenuId)!
+              setEditingId(task.id)
+              setEditingTitle(task.title)
+              setOpenMenuId(null)
+              setMenuPosition(null)
+            }}
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-gray-700 hover:bg-pink-50"
+          >
+            <Pencil size={12} /> Editar
+          </button>
+          <button
+            onClick={() => handleDelete(openMenuId)}
+            className="flex items-center gap-2 w-full px-3 py-1.5 text-sm text-red-500 hover:bg-red-50"
+          >
+            <Trash2 size={12} /> Excluir
+          </button>
+        </div>,
+        document.body
       )}
 
     </div>
