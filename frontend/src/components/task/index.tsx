@@ -253,7 +253,7 @@ export default function TaskList({ roomId, currentUserId }: Props) {
       {openMenuId && menuPosition && tasks.find(t => t.id === openMenuId) && createPortal(
         <div
           ref={menuRef}
-          className="fixed z-[9999] bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32"
+          className="fixed z-9999 bg-white border border-gray-200 rounded-lg shadow-lg py-1 w-32"
           style={{ top: menuPosition.top, left: menuPosition.left }}
         >
           <button
